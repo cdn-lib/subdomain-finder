@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sub Domain Finder</title>
+    <meta name="description" content="Temukan semua subdomain dengan alat pencari subdomain kami. Cukup masukkan domain target dan dapatkan hasil instan. Gratis, akurat, dan mudah digunakan.">
+
+    <link rel="canonical" href="https://www.domainsaya.com/url-halaman-ini">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Sub Domain Finder">
+    <meta property="og:description" content="Temukan semua subdomain dengan alat pencari subdomain kami. Cukup masukkan domain target dan dapatkan hasil instan. Gratis, akurat, dan mudah digunakan.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cdn-lib.hithub.io/subdomain-finder">
+    <meta property="og:image" content="https://cdn.jsdelivr.net/gh/cdn-lib/img/1761281581141.jpg">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sub Domain Finder">
+    <meta name="twitter:description" content="Temukan semua subdomain dengan alat pencari subdomain kami. Cukup masukkan domain target dan dapatkan hasil instan. Gratis, akurat, dan mudah digunakan.">
+    <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/cdn-lib/img/1761281581141.jpg">
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/cdn-lib/img/1761281581141.ico" sizes="any">
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/cdn-lib/img/1761281581141.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/cdn-lib/img/1761281581141.jpg">
+    <script src="https://cdn.jsdelivr.net/gh/cdn-lib/npm@2.0.3/theme.js" data="b"></script>
+    
+</head>
+
+  <style>
+    body {
+      background-color: var(--bs-dark-bg-subtle);
+    }
+    #log {
+      max-height: 400px;
+      overflow-y: auto;
+      background-color: var(--bs-tertiary-bg);
+      border-radius: var(--bs-border-radius);
+      padding: 1rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-9 col-lg-7">
+        
+        <div class="card shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h2 class="card-title h4 mb-3 text-center">Subdomain Finder</h2>
+            <div class="input-group mb-3">
+              <span class="input-group-text">https</span>
+              <input class="form-control form-control-lg" id="domain" placeholder="example.com">
+            </div>
+            <button class="btn btn-primary w-100 btn-lg" id="scanButton" onclick="startScan()">
+              <span id="btn-text">Mulai Scan</span>
+              <span class="spinner-border spinner-border-sm d-none" id="btn-spinner" role="status" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-header h5">
+            Hasil
+          </div>
+          <div class="card-body">
+            <pre id="result">Masukan domain .....</pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  
+  
+  <ikan class="ikan"></ikan>
+  
+  <script> window.fixit = { isDark: true }; </script>
+  
+
+  <script>
+    async function startScan() {
+      const domainInput = document.getElementById('domain');
+      const domain = domainInput.value.trim();
+      const log = document.getElementById('result');
+      const scanButton = document.getElementById('scanButton');
+      const btnText = document.getElementById('btn-text');
+      const btnSpinner = document.getElementById('btn-spinner');
+
+      log.textContent = '';
+      if (!domain) {
+        log.textContent = 'Masukkan domain dulu.';
+        return;
+      }
+
+      scanButton.disabled = true;
+      domainInput.disabled = true;
+      btnText.textContent = 'Scanning...';
+      btnSpinner.classList.remove('d-none');
+      log.textContent = 'Mencari subdomain untuk: ' + domain + '\n\n';
+
+      const sources = [
+        `https://rapiddns.io/subdomain/${domain}?full=1`,
+        `https://crt.sh/?q=%25.${domain}`,
+        `https://jldc.me/anubis/subdomains/${domain}`,
+        `https://api.hackertarget.com/hostsearch/?q=${domain}`,
+        `https://otx.alienvault.com/api/v1/indicators/domain/${domain}/passive_dns`
+      ];
+
+      let allSubs = new Set();
+      const domainRegex = new RegExp(`[a-zA-Z0-9.-]+\\.${domain.replace(/\./g, '\\.')}`, 'g');
+
+      for (const url of sources) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          const text = await res.text();
+          const found = text.matchAll(domainRegex);
+          for (const m of found) allSubs.add(m[0]);
+        } catch (err) {
+          //log.textContent += `Gagal mengambil data dari ${url}\n`;
+        }
+      }
+
+      const list = Array.from(allSubs).sort();
+      log.textContent += `Selesai! Total subdomain unik: ${list.length}\n\n`;
+      log.textContent += list.join('\n');
+
+      scanButton.disabled = false;
+      domainInput.disabled = false;
+      btnText.textContent = 'Mulai Scan';
+      btnSpinner.classList.add('d-none');
+    }
+  </script>
+   
+</body>
+</html>
